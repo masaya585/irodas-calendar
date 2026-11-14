@@ -21,8 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "data" / "slots.json"
 JST = timezone(timedelta(hours=9))
 DEFAULT_URL = "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
-SCHOOL = os.environ.get("IRODAS_SCHOOL", "駒澤大学").strip()
-FACULTY = os.environ.get("IRODAS_FACULTY", "経済学部").strip()
+SCHOOL = os.environ.get("IRODAS_SCHOOL", "").strip()
+FACULTY = os.environ.get("IRODAS_FACULTY", "").strip()
 
 MONTH_HEADER = re.compile(r"(20\d{2})年\s*(1[0-2]|[1-9])月")
 DATE_LINE = re.compile(r"^(1[0-2]|[1-9])月([1-9]|[12]\d|3[01])日\s*[\(（]([月火水木金土日])[\)）]$")
@@ -141,6 +141,10 @@ def main() -> int:
         print("Unsupported IRODAS_URL; expected official partner-call page", file=sys.stderr)
         return 2
 
+    if not SCHOOL or not FACULTY:
+        print("IRODAS_SCHOOL and IRODAS_FACULTY secrets are required", file=sys.stderr)
+        return 2
+
     try:
         body_text, terms = asyncio.run(fetch_public_list(url))
         slots = parse_public_list(body_text, terms)
@@ -159,8 +163,8 @@ def main() -> int:
                 for day, start in slots
             ],
             "note": (
-                "登録前の空き状況を駒澤大学・経済学部で取得しています。"
-                "取得後に変更される場合があります。予約は必ず公式ページで確認してください。"
+                "空き状況の自動取得データです。"
+                "取得後に変更される場合があります。予約は必ず正式な手続きで確定してください。"
             ),
         }
         # Only publish after a validated parse. Atomic replace is important
