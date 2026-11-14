@@ -33,7 +33,10 @@
     .updated { color: #617083; font-size: 13px; }
     .warning-text { margin: 0; padding: 12px 22px; background: #fff8e9; color: #805a1b; font-size: 13px; border-bottom: 1px solid #fae8c7; }
     .controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 20px 22px 14px; }
-    .navigation { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .week-tabs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .week-tab { cursor: pointer; background: #fff; border: 1px solid #dce4ee; border-radius: 10px; color: #344c68; font-size: 13px; font-weight: 700; min-height: 40px; padding: 9px 13px; white-space: nowrap; }
+    .week-tab:hover { background: #f2f6fc; }
+    .week-tab[aria-pressed="true"] { background: #e5f0fc; border-color: #4983cc; color: #174e95; }
     .nav-button { cursor: pointer; background: #fff; border: 1px solid #dce4ee; border-radius: 10px; color: #243854; font-weight: 650; min-height: 38px; padding: 8px 12px; }
     .nav-button:hover:not(:disabled) { background: #f2f6fc; }
     .nav-button:disabled { cursor: not-allowed; opacity: .35; }
@@ -114,12 +117,7 @@
       </div>
       <p class="warning-text" id="warning" hidden></p>
       <div class="controls">
-        <div class="navigation" aria-label="週の切り替え">
-          <button type="button" class="nav-button" id="prev" aria-label="前の週へ">‹ 前の週</button>
-          <button type="button" class="nav-button" id="today">今週</button>
-          <button type="button" class="nav-button" id="next" aria-label="次の週へ">次の週 ›</button>
-          <span class="range" id="range"></span>
-        </div>
+        <div class="week-tabs" id="week-tabs" role="group" aria-label="表示する期間"></div>
         <label class="filter"><input id="only-open" type="checkbox" checked> 空きのある枠だけ表示</label>
       </div>
       <div class="legend" aria-label="記号の意味">
@@ -224,7 +222,7 @@
   const FORM_ENDPOINT = 'https://formspree.io/f/mjywgaez';
   const FRESHNESS_MS = 3 * 60 * 60 * 1000;
   const el = (id) => document.getElementById(id);
-  const state = { weekOffset: 0, onlyOpen: true, slots: [], loaded: false, note: '', updatedAt: null, selected: null };
+  const state = { selectedWeek: null, onlyOpen: true, slots: [], loaded: false, note: '', updatedAt: null, selected: null };
 
   function utcDate(iso) {
     const parts = iso.split('-').map(Number);
@@ -243,10 +241,39 @@
     return map.year + '-' + map.month + '-' + map.day;
   }
 
-  function weekStart() {
-    const today = utcDate(japanToday());
-    today.setUTCDate(today.getUTCDate() - ((today.getUTCDay() + 6) % 7) + state.weekOffset * 7);
-    return today;
+  function startOfWeek(iso) {
+    const date = utcDate(iso);
+    date.setUTCDate(date.getUTCDate() - ((date.getUTCDay() + 6) % 7));
+    return date;
+  }
+
+  function renderWeekTabs() {
+    const today = japanToday();
+    const weekKeys = [...new Set(
+      state.slots.filter((slot) => slot.date >= today)
+        .map((slot) => dateISO(startOfWeek(slot.date)))
+    )].sort();
+    if (weekKeys.length === 0) weekKeys.push(dateISO(startOfWeek(today)));
+    if (!weekKeys.includes(state.selectedWeek)) state.selectedWeek = weekKeys[0];
+
+    const tabs = el('week-tabs');
+    tabs.replaceChildren();
+    weekKeys.forEach((key) => {
+      const start = startOfWeek(key);
+      const end = new Date(start.getTime());
+      end.setUTCDate(end.getUTCDate() + 6);
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'week-tab';
+      button.textContent = dayLabel(start) + ' 〜 ' + dayLabel(end);
+      button.setAttribute('aria-pressed', String(key === state.selectedWeek));
+      button.addEventListener('click', () => {
+        state.selectedWeek = key;
+        render();
+      });
+      tabs.appendChild(button);
+    });
+    return state.selectedWeek;
   }
 
   function dayLabel(date) {
@@ -335,7 +362,7 @@
   }
 
   function render() {
-    const start = weekStart();
+    const start = startOfWeek(renderWeekTabs());
     const days = Array.from({length: 7}, (_, index) => {
       const date = new Date(start.getTime());
       date.setUTCDate(date.getUTCDate() + index);
@@ -343,8 +370,7 @@
     });
     const dates = days.map(dateISO);
     const today = japanToday();
-    el('prev').disabled = state.weekOffset <= 0;
-    el('range').textContent = dayLabel(days[0]) + ' 〜 ' + dayLabel(days[6]);
+    // The selected date range is shown directly on its tab.
 
     const weekSlots = state.slots.filter((slot) => dates.includes(slot.date));
     const visible = state.onlyOpen ? weekSlots.filter((s) => s.available) : weekSlots;
@@ -535,18 +561,6 @@
     }
   });
 
-  el('prev').addEventListener('click', () => {
-    state.weekOffset = Math.max(0, state.weekOffset - 1);
-    render();
-  });
-  el('today').addEventListener('click', () => {
-    state.weekOffset = 0;
-    render();
-  });
-  el('next').addEventListener('click', () => {
-    state.weekOffset += 1;
-    render();
-  });
   el('only-open').addEventListener('change', (event) => {
     state.onlyOpen = event.target.checked;
     render();
