@@ -43,8 +43,6 @@
     .range { font-size: 15px; font-weight: 800; min-width: 162px; text-align: center; }
     .filter { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: #33445c; font-size: 13px; font-weight: 650; }
     .filter input { width: 17px; height: 17px; accent-color: #166b56; }
-    .legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 0 22px 16px; color: #718095; font-size: 12px; }
-    .legend strong { color: #167756; }
     .week-summary { padding: 0 22px 14px; font-size: 13px; font-weight: 650; color: #4f6077; }
     .table-scroll { overflow-x: auto; border-top: 1px solid #e9eef5; }
     table { border-collapse: collapse; width: 100%; min-width: 840px; table-layout: fixed; }
@@ -93,7 +91,7 @@
       .container { padding: 20px 12px 40px; }
       .panel { border-radius: 14px; margin-top: 18px; }
       .summary, .controls { padding-left: 14px; padding-right: 14px; }
-      .legend, .week-summary { padding-left: 14px; padding-right: 14px; }
+      .week-summary { padding-left: 14px; padding-right: 14px; }
       .range { font-size: 13px; min-width: 144px; }
       .nav-button { padding: 7px 10px; }
       .table-scroll { scrollbar-color: #c8d3df transparent; }
@@ -119,9 +117,6 @@
       <div class="controls">
         <div class="week-tabs" id="week-tabs" role="group" aria-label="表示する期間"></div>
         <label class="filter"><input id="only-open" type="checkbox" checked> 空きのある枠だけ表示</label>
-      </div>
-      <div class="legend" aria-label="記号の意味">
-        <span><strong>○</strong> 予約可能</span><span>× 満席</span><span>— データなし（満席とは限りません）</span>
       </div>
       <div id="week-summary" class="week-summary" aria-live="polite"></div>
       <div id="table-scroll" class="table-scroll" hidden>
@@ -200,7 +195,7 @@
           </div>
           <label class="consent">
             <input id="consent" type="checkbox" name="代理申込への同意" value="同意する" required>
-            <span>入力情報が運営者にメールで共有され、面談提供元（irodas）への代理登録・予約申込と結果連絡に使用されることに同意します。送信には外部サービス Formspree を使用します。<a href="https://formspree.io/legal/privacy-policy/" target="_blank" rel="noopener noreferrer">Formspreeのプライバシー情報</a>も確認してください。</span>
+            <span>入力内容を面談の代理予約に利用し、予約先へ共有することに同意します。</span>
           </label>
           <div class="form-actions">
             <button class="submit-btn" type="submit" id="send-application" disabled>予約希望を送信</button>
@@ -334,7 +329,7 @@
     el('application-panel').hidden = false;
     el('send-application').disabled = !snapshotIsFresh() || !formConfigured();
     if (!snapshotIsFresh()) {
-      feedback('現在は過去の参考データです。自動更新で最新の空き枠を取得するまで、申込は受け付けていません。', '');
+      feedback('空き状況の更新が完了するまで、申込は受け付けていません。', '');
     } else if (!formConfigured()) {
       feedback('申込フォームを準備しています。メール通知の設定が完了するまで送信はできません。', '');
     } else {
@@ -486,9 +481,9 @@
       } else {
         el('updated').textContent = '自動取得: まだ成功していません';
         if (state.slots.length) {
-          status.textContent = '過去の参考データ';
+          status.textContent = '更新待ち';
           status.classList.add('warning');
-          warning.textContent = '表示中の日時は最新とは限りません。更新が確認できるまで予約希望の受付は停止しています。';
+          warning.textContent = '空き状況を更新しています。';
           warning.hidden = false;
         } else {
           status.textContent = '取得先の設定待ち';
