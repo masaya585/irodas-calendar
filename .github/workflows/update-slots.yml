@@ -18,8 +18,8 @@ jobs:
     timeout-minutes: 8
     env:
       IRODAS_URL: ${{ secrets.IRODAS_URL }}
-      IRODAS_SCHOOL: 駒澤大学
-      IRODAS_FACULTY: 経済学部
+      IRODAS_SCHOOL: ${{ secrets.IRODAS_SCHOOL }}
+      IRODAS_FACULTY: ${{ secrets.IRODAS_FACULTY }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,15 +29,31 @@ jobs:
       - name: Validate parser with offline tests
         run: python -m unittest discover -s tests -v
 
+      - name: Check private search configuration
+        id: check
+        env:
+          SCHOOL: ${{ secrets.IRODAS_SCHOOL }}
+          FACULTY: ${{ secrets.IRODAS_FACULTY }}
+        run: |
+          if [ -z "$SCHOOL" ] || [ -z "$FACULTY" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Configure IRODAS_SCHOOL and IRODAS_FACULTY as repository secrets to activate automatic collection."
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install Playwright
+        if: steps.check.outputs.ready == 'true'
         run: |
           python -m pip install --disable-pip-version-check playwright==1.58.0
           python -m playwright install --with-deps chromium
 
       - name: Fetch public availability
+        if: steps.check.outputs.ready == 'true'
         run: python scripts/fetch_slots.py
 
       - name: Commit validated snapshot
+        if: steps.check.outputs.ready == 'true'
         run: |
           if git diff --quiet -- data/slots.json; then
             echo "No changes"
