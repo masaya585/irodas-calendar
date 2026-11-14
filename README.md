@@ -1,25 +1,25 @@
-# irodas-calendar
+# 空き時間カレンダー
 
-irodas の予約枠を定期的に確認し、GitHub Pages のカレンダーに反映するための土台です。月額 0 円運用を想定しています。
+希望日時を選んだ後に必要情報を入力できる、非公式の面談空き時間カレンダー。
 
-- **GitHub Actions**: 1時間ごとに取得スクリプトを実行（無料枠内を想定。定期実行は遅延・欠落することがあります）
-- **GitHub Pages**: `index.html` + `data/slots.json` を無料公開
-- **取得スクリプト**: `scripts/fetch_slots.py`（対象ページが確定したらセレクタを合わせます）
+- GitHub Pages: 公開サイト `index.html`
+- GitHub Actions: 1時間ごとに公開されている予約枠を取得（動作検証中）
+- Formspree: 予約希望受付フォーム（受信内容は公開リポジトリに保存しない）
+- データ形式: `data/slots.json` は固定
 
-## 絶対に守ること
-- GitHub のログイン情報・irodas の ID / パスワード・Cookie を、コードや公開ページに書かない
-- 認証が必要な場合は GitHub の **Settings → Secrets and variables → Actions** にだけ登録する
-- irodas 側が自動アクセス / ログイン後情報の外部公開を許可しているかは、対象ページが確定した時点で確認する
+## 公開情報と認証情報
 
-## セットアップ手順
-詳しくは `SETUP.md` を参照。
+大学名・学部名は公開コードに書かず、GitHub ActionsのRepository secretsに `IRODAS_SCHOOL` と `IRODAS_FACULTY` を設定する。
+`IRODAS_URL` は必要な場合のみSecretsで設定する。
+ログイン情報、Cookie、トークン、応募者の個人情報は公開リポジトリに保存しない。
 
-1. GitHub で Public リポジトリ `irodas-calendar` を作成
-2. このフォルダの中身をそのリポジトリに push
-3. Settings → Pages → Branch: `main` / `(root)` を選んで Save
-4. 必要なら Secrets に `IRODAS_URL` などを登録
-5. Actions タブで `Update slots` を手動実行して初回確認
+このカレンダーは公式の予約システムではない。日時の選択やフォーム送信で予約は確定しない。取得の失敗や空き枠の変動を考慮し、正確性を保証しない。
 
-## 現在の状態
-- サイトとワークフローの土台は作成済み
-- 取得先の irodas ページ（どの企業・イベントの予約枠か、URL、ログイン要否）が未確定のため、スクリプトはプレースホルダです。確定後に実ページに合わせて実装します。
+## 初回動作確認
+
+1. 必要なSecretsをGitHubで設定する
+2. Actions → Update slots → Run workflow
+3. `data/slots.json` の `updated_at` とWorkflowログを確認する
+4. メール送信は自分の情報でフォームテストをする（正式な面談予約は行わない）
+
+GitHubのPublicリポジトリの過去コミットは閲覧できるため、公開済み情報が本当に機密である場合、履歴を含む対応が別途必要。
