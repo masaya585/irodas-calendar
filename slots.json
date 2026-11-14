@@ -1,0 +1,6 @@
+{
+  "updated_at": null,
+  "source": "irodas",
+  "slots": [],
+  "note": "IRODAS_URL が未設定です。GitHub Secrets に取得対象 URL を登録してください。"
+}

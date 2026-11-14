@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>irodas 予約枠カレンダー</title>
+<style>
+  body{font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;margin:24px;line-height:1.6;color:#111}
+  header{margin-bottom:16px} h1{font-size:22px;margin:0 0 4px}
+  .muted{color:#666;font-size:13px}
+  .slot{border:1px solid #ddd;border-radius:10px;padding:12px 14px;margin:10px 0}
+  .available{border-color:#2a7} .full{opacity:.6}
+  .badge{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef}
+  .available .badge{background:#dff5e9}
+</style>
+</head>
+<body>
+<header>
+  <h1>irodas 予約枠カレンダー</h1>
+  <div class="muted" id="updated">読み込み中…</div>
+  <div class="muted">1時間ごとに自動更新（GitHub Actions／遅延する場合があります）</div>
+</header>
+<main id="list"></main>
+<script>
+fetch('./data/slots.json', {cache:'no-store'})
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('updated').textContent =
+      data.updated_at ? '最終更新: ' + new Date(data.updated_at).toLocaleString('ja-JP') : 'まだ取得していません';
+    const list = document.getElementById('list');
+    if (!data.slots || data.slots.length === 0) {
+      list.innerHTML = '<p>現在表示できる予約枠がありません。取得先の設定が完了するとここに表示されます。</p>' +
+        (data.note ? '<p class="muted">' + data.note + '</p>' : '');
+      return;
+    }
+    list.innerHTML = data.slots.map(s => `
+      <article class="slot ${s.available ? 'available' : 'full'}">
+        <div><strong>${s.date ?? ''} ${s.time ?? ''}</strong> <span class="badge">${s.available ? '空きあり' : '満席'}</span></div>
+        <div>${s.title ?? '予約枠'}</div>
+        ${s.url ? `<div><a href="${s.url}" target="_blank" rel="noopener">irodasで開く</a></div>` : ''}
+      </article>`).join('');
+  })
+  .catch(() => {
+    document.getElementById('updated').textContent = 'データの読み込みに失敗しました';
+  });
+</script>
+</body>
+</html>
