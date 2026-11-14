@@ -11,9 +11,9 @@ from fetch_slots import parse_public_list
 class AvailabilityParserTests(unittest.TestCase):
     def test_observed_japanese_text(self):
         text = """学校名
-駒澤大学
+サンプル大学
 学部名
-経済学部
+サンプル学部
 面談の空き状況
 空き状況の参照のみです。
 日本時間で表示しています。
