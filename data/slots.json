@@ -1,5 +1,5 @@
 {
-  "updated_at": null,
+  "updated_at": "2026-11-14T13:09:00.126756+09:00",
   "source": "irodas",
   "slots": [
     {
@@ -423,5 +423,5 @@
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
     }
   ],
-  "note": ""
+  "note": "空き状況の自動取得データです。取得後に変更される場合があります。予約は必ず正式な手続きで確定してください。"
 }
