@@ -329,8 +329,15 @@
           status.classList.add('success');
         }
       } else {
-        el('updated').textContent = '最終取得: まだありません';
-        status.textContent = '取得先の設定待ち';
+        el('updated').textContent = '自動取得: まだ成功していません';
+        if (state.slots.length) {
+          status.textContent = '過去の参考データ';
+          status.classList.add('warning');
+          warning.textContent = state.note || '過去の確認結果です。現在の空き状況ではありません。';
+          warning.hidden = false;
+        } else {
+          status.textContent = '取得先の設定待ち';
+        }
       }
       render();
     } catch (error) {
