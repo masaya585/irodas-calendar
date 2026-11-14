@@ -1,48 +1,367 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>irodas 予約枠カレンダー</title>
-<style>
-  body{font-family:system-ui,-apple-system,"Hiragino Sans",sans-serif;margin:24px;line-height:1.6;color:#111}
-  header{margin-bottom:16px} h1{font-size:22px;margin:0 0 4px}
-  .muted{color:#666;font-size:13px}
-  .slot{border:1px solid #ddd;border-radius:10px;padding:12px 14px;margin:10px 0}
-  .available{border-color:#2a7} .full{opacity:.6}
-  .badge{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef}
-  .available .badge{background:#dff5e9}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f8fc">
+  <meta name="description" content="irodasの面談予約枠を週ごとに比較できる非公式カレンダーです。">
+  <title>面談の空き枠 | irodas予約カレンダー</title>
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+      color: #152235;
+      background: #f6f8fc;
+      font-synthesis: none;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; }
+    button, input { font: inherit; }
+    a { color: inherit; }
+    button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid #3368e4; outline-offset: 3px; }
+    .container { max-width: 1140px; margin: 0 auto; padding: 28px 20px 48px; }
+    .eyebrow { display: flex; align-items: center; gap: 9px; font-size: 13px; font-weight: 750; letter-spacing: .04em; color: #3b5d9d; }
+    .logo { display: inline-grid; place-items: center; width: 29px; height: 29px; border-radius: 9px; background: #245cc7; color: white; font-size: 16px; }
+    h1 { margin: 16px 0 8px; font-size: clamp(25px, 4vw, 34px); letter-spacing: -.04em; line-height: 1.35; }
+    .lead { margin: 0; color: #617083; font-size: 14px; }
+    .panel { margin-top: 22px; border: 1px solid #e3e9f1; border-radius: 18px; background: #fff; box-shadow: 0 4px 18px rgba(31, 52, 86, .04); }
+    .summary { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 18px 22px; border-bottom: 1px solid #e9eef5; }
+    .status { display: inline-flex; align-items: center; gap: 7px; padding: 6px 11px; border-radius: 99px; font-size: 13px; font-weight: 700; background: #eff3f8; color: #546579; }
+    .status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+    .status.success { background: #e3f6ed; color: #116d50; }
+    .status.warning { background: #fff4db; color: #936216; }
+    .status.error { background: #feecec; color: #a33434; }
+    .updated { color: #617083; font-size: 13px; }
+    .warning-text { margin: 0; padding: 12px 22px; background: #fff8e9; color: #805a1b; font-size: 13px; border-bottom: 1px solid #fae8c7; }
+    .controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 20px 22px 14px; }
+    .navigation { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .nav-button { cursor: pointer; background: #fff; border: 1px solid #dce4ee; border-radius: 10px; color: #243854; font-weight: 650; min-height: 38px; padding: 8px 12px; }
+    .nav-button:hover:not(:disabled) { background: #f2f6fc; }
+    .nav-button:disabled { cursor: not-allowed; opacity: .35; }
+    .range { font-size: 15px; font-weight: 800; min-width: 162px; text-align: center; }
+    .filter { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; color: #33445c; font-size: 13px; font-weight: 650; }
+    .filter input { width: 17px; height: 17px; accent-color: #166b56; }
+    .legend { display: flex; flex-wrap: wrap; gap: 18px; padding: 0 22px 16px; color: #718095; font-size: 12px; }
+    .legend strong { color: #167756; }
+    .week-summary { padding: 0 22px 14px; font-size: 13px; font-weight: 650; color: #4f6077; }
+    .table-scroll { overflow-x: auto; border-top: 1px solid #e9eef5; }
+    table { border-collapse: collapse; width: 100%; min-width: 840px; table-layout: fixed; }
+    thead th { background: #f8fafd; color: #506179; border-bottom: 1px solid #e7edf5; padding: 14px 6px; font-size: 12px; font-weight: 750; }
+    thead th:first-child { width: 80px; }
+    thead th.today { background: #eaf1ff; color: #245bc5; }
+    tbody th { font-variant-numeric: tabular-nums; font-size: 13px; color: #52657a; font-weight: 750; background: #fbfcff; }
+    td, tbody th { border-bottom: 1px solid #edf0f6; border-right: 1px solid #f0f3f8; padding: 9px 5px; text-align: center; vertical-align: middle; }
+    td:last-child { border-right: 0; }
+    tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
+    .no-data { color: #bec7d5; font-size: 17px; }
+    .slot-link, .slot-closed { display: flex; flex-direction: column; align-items: center; gap: 4px; border: 1px solid transparent; border-radius: 8px; padding: 7px 4px; font-size: 12px; text-decoration: none; }
+    .slot-link { background: #e8f7ee; border-color: #c1e9d3; color: #117348; }
+    .slot-link:hover { background: #d6f0e1; border-color: #75ca9c; }
+    .slot-open { font-weight: 800; }
+    .slot-closed { background: #f5f6f9; color: #8995a4; }
+    .slot-title { font-size: 10px; color: inherit; font-weight: 500; max-width: 100%; overflow-wrap: anywhere; }
+    .slot-stack { display: flex; flex-direction: column; gap: 5px; }
+    .empty { padding: 52px 22px; text-align: center; }
+    .empty h2 { margin: 0 0 8px; font-size: 17px; }
+    .empty p { margin: 0 auto; max-width: 540px; font-size: 13px; line-height: 1.9; color: #69788b; overflow-wrap: anywhere; }
+    .notice { margin-top: 18px; font-size: 12px; line-height: 1.8; color: #728095; }
+    [hidden] { display: none !important; }
+    @media (max-width: 600px) {
+      .container { padding: 20px 12px 40px; }
+      .panel { border-radius: 14px; margin-top: 18px; }
+      .summary, .controls { padding-left: 14px; padding-right: 14px; }
+      .legend, .week-summary { padding-left: 14px; padding-right: 14px; }
+      .range { font-size: 13px; min-width: 144px; }
+      .nav-button { padding: 7px 10px; }
+      .table-scroll { scrollbar-color: #c8d3df transparent; }
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1>irodas 予約枠カレンダー</h1>
-  <div class="muted" id="updated">読み込み中…</div>
-  <div class="muted">1時間ごとに自動更新（GitHub Actions／遅延する場合があります）</div>
-</header>
-<main id="list"></main>
+  <main class="container">
+    <header>
+      <div class="eyebrow"><span class="logo" aria-hidden="true">▦</span> IRODAS CALENDAR</div>
+      <h1>面談の空き枠を、まとめて確認。</h1>
+      <p class="lead">日付を切り替えて空いている時間を探せます。予約は元のサイトから行ってください。</p>
+    </header>
+
+    <section class="panel" aria-label="週間予約カレンダー">
+      <div class="summary">
+        <div class="status" id="status" role="status">データを読み込み中</div>
+        <div class="updated" id="updated" aria-live="polite">最終取得: 確認中</div>
+      </div>
+      <p class="warning-text" id="warning" hidden></p>
+      <div class="controls">
+        <div class="navigation" aria-label="週の切り替え">
+          <button type="button" class="nav-button" id="prev" aria-label="前の週へ">‹ 前の週</button>
+          <button type="button" class="nav-button" id="today">今週</button>
+          <button type="button" class="nav-button" id="next" aria-label="次の週へ">次の週 ›</button>
+          <span class="range" id="range"></span>
+        </div>
+        <label class="filter"><input id="only-open" type="checkbox" checked> 空きのある枠だけ表示</label>
+      </div>
+      <div class="legend" aria-label="記号の意味">
+        <span><strong>○</strong> 予約可能</span><span>× 満席</span><span>— データなし（満席とは限りません）</span>
+      </div>
+      <div id="week-summary" class="week-summary" aria-live="polite"></div>
+      <div id="table-scroll" class="table-scroll" hidden>
+        <table aria-label="曜日と時間ごとの予約状況">
+          <thead id="table-head"></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+      <div id="empty" class="empty">
+        <h2 id="empty-title">予約枠データを確認しています</h2>
+        <p id="empty-message">データがまだ取得されていない場合、予約枠は表示されません。</p>
+      </div>
+    </section>
+    <p class="notice">このページは個人が作成した非公式の空き枠確認用サイトで、irodasの公式サービスではありません。表示は取得時点の情報です。予約枠は随時変わるため、最新状況と予約可否は必ず元の予約ページで確認してください。</p>
+  </main>
+
 <script>
-fetch('./data/slots.json', {cache:'no-store'})
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById('updated').textContent =
-      data.updated_at ? '最終更新: ' + new Date(data.updated_at).toLocaleString('ja-JP') : 'まだ取得していません';
-    const list = document.getElementById('list');
-    if (!data.slots || data.slots.length === 0) {
-      list.innerHTML = '<p>現在表示できる予約枠がありません。取得先の設定が完了するとここに表示されます。</p>' +
-        (data.note ? '<p class="muted">' + data.note + '</p>' : '');
+(function () {
+  'use strict';
+  const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  const el = (id) => document.getElementById(id);
+  const state = { weekOffset: 0, onlyOpen: true, slots: [], loaded: false, note: '' };
+
+  function utcDate(iso) {
+    const parts = iso.split('-').map(Number);
+    return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2]));
+  }
+
+  function dateISO(date) {
+    return date.toISOString().slice(0, 10);
+  }
+
+  function japanToday() {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit'
+    }).formatToParts(new Date());
+    const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+    return map.year + '-' + map.month + '-' + map.day;
+  }
+
+  function weekStart() {
+    const today = utcDate(japanToday());
+    today.setUTCDate(today.getUTCDate() - ((today.getUTCDay() + 6) % 7) + state.weekOffset * 7);
+    return today;
+  }
+
+  function dayLabel(date) {
+    return (date.getUTCMonth() + 1) + '/' + date.getUTCDate() + '（' + dayNames[date.getUTCDay()] + '）';
+  }
+
+  function safeLink(raw) {
+    if (typeof raw !== 'string' || !raw) return null;
+    try {
+      const url = new URL(raw);
+      if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password) return null;
+      return url.href;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function normalize(raw) {
+    if (!raw || typeof raw !== 'object' || !Array.isArray(raw.slots)) throw new Error('Invalid slots.json');
+    return raw.slots.filter((s) => {
+      if (!s || typeof s !== 'object' || typeof s.date !== 'string' || typeof s.time !== 'string') return false;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s.date) || !/^([01]\d|2[0-3]):[0-5]\d$/.test(s.time)) return false;
+      return !Number.isNaN(utcDate(s.date).getTime()) && dateISO(utcDate(s.date)) === s.date;
+    }).map((s) => ({
+      date: s.date,
+      time: s.time,
+      title: typeof s.title === 'string' ? s.title : '面談枠',
+      available: s.available === true,
+      url: safeLink(s.url)
+    }));
+  }
+
+  function setEmpty(title, message) {
+    el('table-scroll').hidden = true;
+    el('empty').hidden = false;
+    el('empty-title').textContent = title;
+    el('empty-message').textContent = message;
+  }
+
+  function createSlot(slot) {
+    const link = slot.available && !!slot.url;
+    const card = document.createElement(link ? 'a' : 'div');
+    card.className = slot.available ? 'slot-link' : 'slot-closed';
+    if (link) {
+      card.href = slot.url;
+      card.target = '_blank';
+      card.rel = 'noopener noreferrer';
+      card.referrerPolicy = 'no-referrer';
+      card.setAttribute('aria-label', slot.date + ' ' + slot.time + ' ' + slot.title + ' の予約ページを開く');
+      card.title = '予約サイトを開く';
+    }
+    const main = document.createElement('span');
+    main.className = 'slot-open';
+    main.textContent = slot.available ? (link ? '○ 空きあり ↗' : '○ 空きあり') : '× 満席';
+    const title = document.createElement('span');
+    title.className = 'slot-title';
+    title.textContent = slot.title || '面談枠';
+    card.append(main, title);
+    return card;
+  }
+
+  function render() {
+    const start = weekStart();
+    const days = Array.from({length: 7}, (_, index) => {
+      const date = new Date(start.getTime());
+      date.setUTCDate(date.getUTCDate() + index);
+      return date;
+    });
+    const dates = days.map(dateISO);
+    const today = japanToday();
+    el('prev').disabled = state.weekOffset <= 0;
+    el('range').textContent = dayLabel(days[0]) + ' 〜 ' + dayLabel(days[6]);
+
+    const weekSlots = state.slots.filter((slot) => dates.includes(slot.date));
+    const visible = state.onlyOpen ? weekSlots.filter((s) => s.available) : weekSlots;
+    const openCount = weekSlots.filter((s) => s.available).length;
+    el('week-summary').textContent = state.loaded && state.slots.length
+      ? 'この週の空き枠: ' + openCount + '件（取得データに含まれるもの）'
+      : '';
+
+    if (!state.loaded) {
+      setEmpty('予約枠データを読み込めませんでした', '時間をおいて再読み込みしてください。予約先のサイトで直接確認することもできます。');
       return;
     }
-    list.innerHTML = data.slots.map(s => `
-      <article class="slot ${s.available ? 'available' : 'full'}">
-        <div><strong>${s.date ?? ''} ${s.time ?? ''}</strong> <span class="badge">${s.available ? '空きあり' : '満席'}</span></div>
-        <div>${s.title ?? '予約枠'}</div>
-        ${s.url ? `<div><a href="${s.url}" target="_blank" rel="noopener">irodasで開く</a></div>` : ''}
-      </article>`).join('');
-  })
-  .catch(() => {
-    document.getElementById('updated').textContent = 'データの読み込みに失敗しました';
+    if (!state.slots.length) {
+      setEmpty('まだ予約枠データがありません', state.note || '取得先の設定が完了すると、ここに予約枠が表示されます。');
+      return;
+    }
+    if (!visible.length) {
+      const message = state.onlyOpen
+        ? 'この週には取得済みの空き枠がありません。満席や非公開の枠まで確認するには、絞り込みを解除してください。'
+        : 'この週の予約枠は取得データに含まれていません。次の週も確認してみてください。';
+      setEmpty('この週に表示できる枠はありません', message);
+      return;
+    }
+
+    const head = el('table-head');
+    const body = el('table-body');
+    head.replaceChildren();
+    body.replaceChildren();
+
+    const headerRow = document.createElement('tr');
+    const timeHeader = document.createElement('th');
+    timeHeader.scope = 'col';
+    timeHeader.textContent = '時間';
+    headerRow.appendChild(timeHeader);
+    days.forEach((day, i) => {
+      const th = document.createElement('th');
+      th.scope = 'col';
+      th.textContent = dayLabel(day);
+      if (dates[i] === today) {
+        th.className = 'today';
+        th.setAttribute('aria-current', 'date');
+      }
+      headerRow.appendChild(th);
+    });
+    head.appendChild(headerRow);
+
+    const times = [...new Set(visible.map((s) => s.time))].sort();
+    const grouped = new Map();
+    visible.forEach((slot) => {
+      const key = slot.date + '|' + slot.time;
+      if (!grouped.has(key)) grouped.set(key, []);
+      grouped.get(key).push(slot);
+    });
+
+    times.forEach((time) => {
+      const row = document.createElement('tr');
+      const rowHeader = document.createElement('th');
+      rowHeader.scope = 'row';
+      rowHeader.textContent = time;
+      row.appendChild(rowHeader);
+      dates.forEach((date) => {
+        const cell = document.createElement('td');
+        const items = grouped.get(date + '|' + time) || [];
+        if (!items.length) {
+          const dash = document.createElement('span');
+          dash.className = 'no-data';
+          dash.textContent = '—';
+          dash.setAttribute('aria-label', '取得データなし');
+          cell.appendChild(dash);
+        } else {
+          const stack = document.createElement('div');
+          stack.className = 'slot-stack';
+          items.forEach((slot) => stack.appendChild(createSlot(slot)));
+          cell.appendChild(stack);
+        }
+        row.appendChild(cell);
+      });
+      body.appendChild(row);
+    });
+    el('empty').hidden = true;
+    el('table-scroll').hidden = false;
+  }
+
+  async function load() {
+    try {
+      const response = await fetch('./data/slots.json?ts=' + Date.now(), {cache: 'no-store'});
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      const data = await response.json();
+      state.slots = normalize(data);
+      state.note = typeof data.note === 'string' ? data.note : '';
+      state.loaded = true;
+      const updatedAt = data.updated_at ? new Date(data.updated_at) : null;
+      const validTime = updatedAt && !Number.isNaN(updatedAt.getTime());
+      const status = el('status');
+      status.className = 'status';
+      const warning = el('warning');
+      warning.hidden = true;
+      if (validTime) {
+        el('updated').textContent = '最終取得: ' + new Intl.DateTimeFormat('ja-JP', {
+          timeZone: 'Asia/Tokyo', year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        }).format(updatedAt) + '（日本時間）';
+        const age = Date.now() - updatedAt.getTime();
+        if (age > 3 * 60 * 60 * 1000) {
+          status.textContent = '更新が遅れています';
+          status.classList.add('warning');
+          warning.textContent = '最終取得から3時間以上経過しています。予約先で最新の空き状況を確認してください。';
+          warning.hidden = false;
+        } else {
+          status.textContent = 'データ取得済み';
+          status.classList.add('success');
+        }
+      } else {
+        el('updated').textContent = '最終取得: まだありません';
+        status.textContent = '取得先の設定待ち';
+      }
+      render();
+    } catch (error) {
+      el('status').className = 'status error';
+      el('status').textContent = 'データ読み込みエラー';
+      el('updated').textContent = '予約枠を取得できませんでした';
+      state.loaded = false;
+      render();
+      console.error('Failed to load calendar data:', error);
+    }
+  }
+
+  el('prev').addEventListener('click', () => {
+    state.weekOffset = Math.max(0, state.weekOffset - 1);
+    render();
   });
+  el('today').addEventListener('click', () => {
+    state.weekOffset = 0;
+    render();
+  });
+  el('next').addEventListener('click', () => {
+    state.weekOffset += 1;
+    render();
+  });
+  el('only-open').addEventListener('change', (event) => {
+    state.onlyOpen = event.target.checked;
+    render();
+  });
+  render();
+  load();
+})();
 </script>
 </body>
 </html>
