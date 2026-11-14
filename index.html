@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f8fc">
-  <meta name="description" content="irodasの面談予約枠を週ごとに比較できる非公式カレンダーです。">
-  <title>面談の空き枠 | irodas予約カレンダー</title>
+  <meta name="description" content="面談の空き時間を週ごとに比較し、希望日時を選べるカレンダーです。">
+  <title>空き時間カレンダー | 面談希望の受付</title>
   <style>
     :root {
       font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
@@ -105,9 +105,9 @@
 <body>
   <main class="container">
     <header>
-      <div class="eyebrow"><span class="logo" aria-hidden="true">▦</span> IRODAS CALENDAR</div>
-      <h1>面談の空き枠を、まとめて確認。</h1>
-      <p class="lead">空き時間を見てから希望日時を選択し、その後で必要情報を入力できます。正式な予約は運営者が確認します。</p>
+      <div class="eyebrow"><span class="logo" aria-hidden="true">▦</span> AVAILABLE TIMES</div>
+      <h1>空いている日時を、ひと目で。</h1>
+      <p class="lead">面談の空き時間を一覧で確認し、希望日時を選べます。入力は日時を決めてから。</p>
     </header>
 
     <section class="panel" aria-label="週間予約カレンダー">
@@ -200,7 +200,7 @@
           </div>
           <label class="consent">
             <input id="consent" type="checkbox" name="代理申込への同意" value="同意する" required>
-            <span>入力した情報がサイト運営者にメールで共有され、面談希望の連絡とirodasへの代理登録・予約申込に使用されることに同意します。送信には外部サービス Formspree を使用します。<a href="https://formspree.io/legal/privacy-policy/" target="_blank" rel="noopener noreferrer">Formspreeのプライバシー情報</a>も確認してください。</span>
+            <span>入力情報が運営者にメールで共有され、面談提供元（irodas）への代理登録・予約申込と結果連絡に使用されることに同意します。送信には外部サービス Formspree を使用します。<a href="https://formspree.io/legal/privacy-policy/" target="_blank" rel="noopener noreferrer">Formspreeのプライバシー情報</a>も確認してください。</span>
           </label>
           <div class="form-actions">
             <button class="submit-btn" type="submit" id="send-application" disabled>予約希望を送信</button>
@@ -210,7 +210,7 @@
         </form>
       </div>
     </section>
-    <p class="notice">このページは個人が作成した非公式サイトで、irodasの公式サービスではありません。空き枠表示は取得時点の参考情報で、日時の選択やフォーム送信だけでは枠は確保されません。申込内容を受け取った運営者がirodasの正式な手続きを行い、結果をご連絡します。複数人が同じ日時を希望する場合があります。</p>
+    <p class="notice">このサイトは面談の空き日時を確認し、予約希望を取りまとめるための非公式ページです。日時の選択や送信では予約は確定しません。運営者が別途予約手続きを行い、結果をご連絡します。空き状況は変わる場合があります。</p>
   </main>
 
 <script>
@@ -384,7 +384,7 @@
       return;
     }
     if (!state.slots.length) {
-      setEmpty('まだ予約枠データがありません', state.note || '取得先の設定が完了すると、ここに予約枠が表示されます。');
+      setEmpty('現在、空き時間を確認中です', '表示できる日時がありません。更新を確認してください。');
       return;
     }
     if (!visible.length) {
@@ -460,7 +460,7 @@
       if (!response.ok) throw new Error('HTTP ' + response.status);
       const data = await response.json();
       state.slots = normalize(data);
-      state.note = typeof data.note === 'string' ? data.note : '';
+      // Do not display source metadata or user-specific acquisition notes.
       state.loaded = true;
       const updatedAt = data.updated_at ? new Date(data.updated_at) : null;
       const validTime = updatedAt && !Number.isNaN(updatedAt.getTime());
@@ -488,7 +488,7 @@
         if (state.slots.length) {
           status.textContent = '過去の参考データ';
           status.classList.add('warning');
-          warning.textContent = state.note || '過去の確認結果です。現在の空き状況ではありません。';
+          warning.textContent = '表示中の日時は最新とは限りません。更新が確認できるまで予約希望の受付は停止しています。';
           warning.hidden = false;
         } else {
           status.textContent = '取得先の設定待ち';
@@ -541,7 +541,7 @@
       dataToSend.set('希望開始時刻', state.selected.time);
       dataToSend.set('面談名', state.selected.title);
       dataToSend.set('取得日時', data.updated_at);
-      dataToSend.set('_subject', 'irodas 面談予約希望 ' + state.selected.date + ' ' + state.selected.time);
+      dataToSend.set('_subject', '面談予約希望 ' + state.selected.date + ' ' + state.selected.time);
       submit.textContent = '送信中…';
       const sent = await fetch(FORM_ENDPOINT, {
         method: 'POST',
