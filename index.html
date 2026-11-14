@@ -525,7 +525,8 @@
       if (!sent.ok) {
         throw new Error('送信に失敗しました。少し時間をおいてやり直してください。');
       }
-      form.hidden = true;
+      submit.textContent = '送信済み';
+      submit.disabled = true;
       feedback('予約希望を受け付けました。まだ予約は確定していません。運営者が内容を確認して連絡します。', 'success');
     } catch (error) {
       feedback(error.message || '送信に失敗しました。', 'error');
