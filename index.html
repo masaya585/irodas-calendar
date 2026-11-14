@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f8fc">
-  <meta name="description" content="面談の空き時間を週ごとに比較し、希望日時を選べるカレンダーです。">
-  <title>空き時間カレンダー | 面談希望の受付</title>
+  <meta name="description" content="就活サポート面談の空き日時を週ごとに確認し、予約希望を送信できる非公式カレンダーです。">
+  <title>就活サポート面談の空き枠カレンダー | 非公式</title>
   <style>
     :root {
       font-family: system-ui, -apple-system, "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
@@ -103,12 +103,12 @@
 <body>
   <main class="container">
     <header>
-      <div class="eyebrow"><span class="logo" aria-hidden="true">▦</span> AVAILABLE TIMES</div>
-      <h1>空いている日時を、ひと目で。</h1>
-      <p class="lead">面談の空き時間を一覧で確認し、希望日時を選べます。入力は日時を決めてから。</p>
+      <div class="eyebrow"><span class="logo" aria-hidden="true">▦</span> 就活サポート面談 · 非公式カレンダー</div>
+      <h1>就活サポート面談の空き枠を、ひと目で。</h1>
+      <p class="lead">就活の相談・サポート面談の空き日時を確認して、予約希望を送れます。日時を選んでから必要情報を入力してください。※このサイトで予約は確定しません。</p>
     </header>
 
-    <section class="panel" aria-label="週間予約カレンダー">
+    <section class="panel" aria-label="就活サポート面談の週間予約カレンダー">
       <div class="summary">
         <div class="status" id="status" role="status">データを読み込み中</div>
         <div class="updated" id="updated" aria-live="polite">最終取得: 確認中</div>
@@ -130,11 +130,11 @@
         <p id="empty-message">データがまだ取得されていない場合、予約枠は表示されません。</p>
       </div>
     </section>
-    <section class="panel" id="application-panel" aria-label="面談希望の申込" hidden>
+    <section class="panel" id="application-panel" aria-label="就活サポート面談の予約希望" hidden>
       <div class="form-panel">
         <button type="button" class="nav-button" id="back-to-calendar">‹ カレンダーに戻る</button>
-        <h2 style="margin-top:18px">希望日時を選択しました</h2>
-        <p class="form-intro">日時を確認し、必要情報を入力してください。これは<strong>面談予約の確定ではなく、代理予約の希望受付</strong>です。</p>
+        <h2 style="margin-top:18px">就活サポート面談の予約希望</h2>
+        <p class="form-intro">希望日時と就活に関する情報を入力してください。これは<strong>面談予約の確定ではなく、代理予約の希望受付</strong>です。</p>
         <div class="selected-slot" id="selected-slot" aria-live="polite"></div>
         <form id="application-form">
           <div class="form-grid">
@@ -192,6 +192,16 @@
                 <option value="その他">その他</option>
               </select>
             </div>
+            <div class="full">
+              <label class="field-label" for="engineering-preference">エンジニア志望度<span class="req">必須</span></label>
+              <select class="field-input" id="engineering-preference" name="エンジニア志望度" required>
+                <option value="" disabled selected>選択してください</option>
+                <option value="総合職">総合職</option>
+                <option value="どちらかといえば総合職">どちらかといえば総合職</option>
+                <option value="どちらかといえばエンジニア">どちらかといえばエンジニア</option>
+                <option value="エンジニア">エンジニア</option>
+              </select>
+            </div>
           </div>
           <label class="consent">
             <input id="consent" type="checkbox" name="代理申込への同意" value="同意する" required>
@@ -205,7 +215,7 @@
         </form>
       </div>
     </section>
-    <p class="notice">このサイトは面談の空き日時を確認し、予約希望を取りまとめるための非公式ページです。日時の選択や送信では予約は確定しません。運営者が別途予約手続きを行い、結果をご連絡します。空き状況は変わる場合があります。</p>
+    <p class="notice">このサイトは就活サポート面談の空き日時を確認し、予約希望を取りまとめるための非公式ページです。日時の選択や送信では予約は確定しません。運営者が別途予約手続きを行い、結果をご連絡します。空き状況は変わる場合があります。</p>
   </main>
 
 <script>
