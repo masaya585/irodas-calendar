@@ -54,7 +54,8 @@
     tbody tr:last-child td, tbody tr:last-child th { border-bottom: 0; }
     .no-data { color: #bec7d5; font-size: 17px; }
     .slot-link, .slot-closed { display: flex; flex-direction: column; align-items: center; gap: 4px; border: 1px solid transparent; border-radius: 8px; padding: 7px 4px; font-size: 12px; text-decoration: none; }
-    .slot-link { background: #e8f7ee; border-color: #c1e9d3; color: #117348; }
+    .slot-link { background: #e8f7ee; border-color: #c1e9d3; color: #117348; cursor: pointer; width: 100%; min-height: 46px; }
+    .slot-link:disabled { opacity: .5; cursor: not-allowed; }
     .slot-link:hover { background: #d6f0e1; border-color: #75ca9c; }
     .slot-open { font-weight: 800; }
     .slot-closed { background: #f5f6f9; color: #8995a4; }
@@ -64,6 +65,26 @@
     .empty h2 { margin: 0 0 8px; font-size: 17px; }
     .empty p { margin: 0 auto; max-width: 540px; font-size: 13px; line-height: 1.9; color: #69788b; overflow-wrap: anywhere; }
     .notice { margin-top: 18px; font-size: 12px; line-height: 1.8; color: #728095; }
+    .form-panel { padding: 24px; }
+    .form-panel h2 { font-size: 21px; margin: 0 0 6px; }
+    .form-intro { margin: 0 0 16px; color: #607083; font-size: 13px; line-height: 1.8; }
+    .selected-slot { padding: 15px; background: #eff6f5; border-radius: 12px; margin: 16px 0 24px; font-size: 15px; font-weight: 750; }
+    .form-grid { display: grid; gap: 14px; grid-template-columns: repeat(2,minmax(0,1fr)); }
+    .form-grid .full { grid-column: 1/-1; }
+    .field-label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .field-label .req { color: #a73434; font-size: 11px; margin-left: 4px; }
+    .field-input { display: block; width: 100%; border: 1px solid #d3dce8; border-radius: 9px; background: white; padding: 11px 12px; font-size: 15px; color: #172438; }
+    .field-input:focus { border-color: #3277b5; outline: 2px solid #cce2f5; }
+    .consent { display: flex; gap: 10px; align-items: start; margin-top: 22px; font-size: 12px; line-height: 1.8; color: #46556c; }
+    .consent input { margin-top: 4px; width: 18px; height: 18px; flex-shrink: 0; accent-color: #126f58; }
+    .form-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 24px; }
+    .submit-btn { border: 0; background: #137658; color: white; cursor: pointer; border-radius: 10px; padding: 13px 23px; font-weight: 750; min-height: 46px; }
+    .submit-btn:hover:not(:disabled) { background: #0c5f46; }
+    .submit-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .form-alert { margin-top: 14px; font-size: 13px; line-height: 1.75; color: #7b5011; background: #fff6e5; padding: 12px; border-radius: 9px; }
+    .form-alert.error { color: #a33434; background: #feecec; }
+    .form-alert.success { color: #0f6b4c; background: #e3f6ed; }
+    .form-alert:empty { display: none; }
     [hidden] { display: none !important; }
     @media (max-width: 600px) {
       .container { padding: 20px 12px 40px; }
@@ -73,6 +94,8 @@
       .range { font-size: 13px; min-width: 144px; }
       .nav-button { padding: 7px 10px; }
       .table-scroll { scrollbar-color: #c8d3df transparent; }
+      .form-panel { padding: 17px; }
+      .form-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -81,7 +104,7 @@
     <header>
       <div class="eyebrow"><span class="logo" aria-hidden="true">▦</span> IRODAS CALENDAR</div>
       <h1>面談の空き枠を、まとめて確認。</h1>
-      <p class="lead">日付を切り替えて空いている時間を探せます。予約は元のサイトから行ってください。</p>
+      <p class="lead">空き時間を見てから希望日時を選択し、その後で必要情報を入力できます。正式な予約は運営者が確認します。</p>
     </header>
 
     <section class="panel" aria-label="週間予約カレンダー">
@@ -114,15 +137,94 @@
         <p id="empty-message">データがまだ取得されていない場合、予約枠は表示されません。</p>
       </div>
     </section>
-    <p class="notice">このページは個人が作成した非公式の空き枠確認用サイトで、irodasの公式サービスではありません。表示は取得時点の情報です。予約枠は随時変わるため、最新状況と予約可否は必ず元の予約ページで確認してください。</p>
+    <section class="panel" id="application-panel" aria-label="面談希望の申込" hidden>
+      <div class="form-panel">
+        <button type="button" class="nav-button" id="back-to-calendar">‹ カレンダーに戻る</button>
+        <h2 style="margin-top:18px">希望日時を選択しました</h2>
+        <p class="form-intro">日時を確認し、必要情報を入力してください。これは<strong>面談予約の確定ではなく、代理予約の希望受付</strong>です。</p>
+        <div class="selected-slot" id="selected-slot" aria-live="polite"></div>
+        <form id="application-form">
+          <div class="form-grid">
+            <div>
+              <label class="field-label" for="family-name">姓<span class="req">必須</span></label>
+              <input class="field-input" id="family-name" name="姓" autocomplete="family-name" required maxlength="60">
+            </div>
+            <div>
+              <label class="field-label" for="given-name">名<span class="req">必須</span></label>
+              <input class="field-input" id="given-name" name="名" autocomplete="given-name" required maxlength="60">
+            </div>
+            <div>
+              <label class="field-label" for="kana-family">セイ（カタカナ）<span class="req">必須</span></label>
+              <input class="field-input" id="kana-family" name="セイ" required maxlength="60">
+            </div>
+            <div>
+              <label class="field-label" for="kana-given">メイ（カタカナ）<span class="req">必須</span></label>
+              <input class="field-input" id="kana-given" name="メイ" required maxlength="60">
+            </div>
+            <div>
+              <label class="field-label" for="email">メールアドレス<span class="req">必須</span></label>
+              <input class="field-input" id="email" type="email" name="email" autocomplete="email" required maxlength="254">
+            </div>
+            <div>
+              <label class="field-label" for="phone">電話番号<span class="req">必須</span></label>
+              <input class="field-input" id="phone" name="電話番号" type="tel" autocomplete="tel" required pattern="[0-9+() -]{9,20}" inputmode="tel" maxlength="20">
+            </div>
+            <div>
+              <label class="field-label" for="grad-year">卒業年度<span class="req">必須</span></label>
+              <input class="field-input" id="grad-year" name="卒年" value="2028卒" required maxlength="12">
+            </div>
+            <div>
+              <label class="field-label" for="school-type">学校区分<span class="req">必須</span></label>
+              <select class="field-input" id="school-type" name="学校区分" required>
+                <option value="大学" selected>大学</option>
+                <option value="大学院">大学院</option>
+                <option value="短期大学">短期大学</option>
+                <option value="専門学校">専門学校</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label" for="school">学校名<span class="req">必須</span></label>
+              <input class="field-input" id="school" name="学校名" autocomplete="organization" required maxlength="100">
+            </div>
+            <div>
+              <label class="field-label" for="faculty">学部名<span class="req">必須</span></label>
+              <input class="field-input" id="faculty" name="学部名" required maxlength="100">
+            </div>
+            <div class="full">
+              <label class="field-label" for="track">文理区分<span class="req">必須</span></label>
+              <select class="field-input" id="track" name="文理" required>
+                <option value="文系">文系</option>
+                <option value="理系">理系</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+          </div>
+          <label class="consent">
+            <input id="consent" type="checkbox" name="代理申込への同意" value="同意する" required>
+            <span>入力した情報がサイト運営者にメールで共有され、面談希望の連絡とirodasへの代理登録・予約申込に使用されることに同意します。送信には外部サービス Formspree を使用します。<a href="https://formspree.io/legal/privacy-policy/" target="_blank" rel="noopener noreferrer">Formspreeのプライバシー情報</a>も確認してください。</span>
+          </label>
+          <div class="form-actions">
+            <button class="submit-btn" type="submit" id="send-application" disabled>予約希望を送信</button>
+            <span class="updated">送信後も予約は未確定です。運営者からの連絡をお待ちください。</span>
+          </div>
+          <p class="form-alert" id="form-alert" aria-live="polite" role="status"></p>
+        </form>
+      </div>
+    </section>
+    <p class="notice">このページは個人が作成した非公式サイトで、irodasの公式サービスではありません。空き枠表示は取得時点の参考情報で、日時の選択やフォーム送信だけでは枠は確保されません。申込内容を受け取った運営者がirodasの正式な手続きを行い、結果をご連絡します。複数人が同じ日時を希望する場合があります。</p>
   </main>
 
 <script>
 (function () {
   'use strict';
   const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+  // Set this to the public endpoint supplied by your Formspree form dashboard.
+  // Never put your personal email address or private keys here.
+  const FORM_ENDPOINT = '';
+  const FRESHNESS_MS = 3 * 60 * 60 * 1000;
   const el = (id) => document.getElementById(id);
-  const state = { weekOffset: 0, onlyOpen: true, slots: [], loaded: false, note: '' };
+  const state = { weekOffset: 0, onlyOpen: true, slots: [], loaded: false, note: '', updatedAt: null, selected: null };
 
   function utcDate(iso) {
     const parts = iso.split('-').map(Number);
@@ -184,21 +286,47 @@
     el('empty-message').textContent = message;
   }
 
+  function snapshotIsFresh() {
+    return state.updatedAt !== null && Date.now() - state.updatedAt < FRESHNESS_MS && Date.now() >= state.updatedAt - 5 * 60 * 1000;
+  }
+
+  function formConfigured() {
+    return /^https:\/\/formspree\.io\/f\/[a-zA-Z0-9]+$/.test(FORM_ENDPOINT);
+  }
+
+  function feedback(message, kind) {
+    const node = el('form-alert');
+    node.textContent = message;
+    node.className = 'form-alert' + (kind ? ' ' + kind : '');
+  }
+
+  function selectSlot(slot) {
+    state.selected = slot;
+    const day = utcDate(slot.date);
+    el('selected-slot').textContent = slot.date + '（' + dayNames[day.getUTCDay()] + '） ' + slot.time + '〜（日本時間・約60分）';
+    el('application-panel').hidden = false;
+    el('send-application').disabled = !snapshotIsFresh() || !formConfigured();
+    if (!snapshotIsFresh()) {
+      feedback('現在は過去の参考データです。自動更新で最新の空き枠を取得するまで、申込は受け付けていません。', '');
+    } else if (!formConfigured()) {
+      feedback('申込フォームを準備しています。メール通知の設定が完了するまで送信はできません。', '');
+    } else {
+      feedback('', '');
+    }
+    el('application-panel').scrollIntoView({behavior: 'smooth', block: 'start'});
+  }
+
   function createSlot(slot) {
-    const link = slot.available && !!slot.url;
-    const card = document.createElement(link ? 'a' : 'div');
+    const card = document.createElement(slot.available ? 'button' : 'div');
     card.className = slot.available ? 'slot-link' : 'slot-closed';
-    if (link) {
-      card.href = slot.url;
-      card.target = '_blank';
-      card.rel = 'noopener noreferrer';
-      card.referrerPolicy = 'no-referrer';
-      card.setAttribute('aria-label', slot.date + ' ' + slot.time + ' ' + slot.title + ' の予約ページを開く');
-      card.title = '予約サイトを開く';
+    if (slot.available) {
+      card.type = 'button';
+      card.setAttribute('aria-label', slot.date + ' ' + slot.time + ' ' + slot.title + 'の予約希望フォームを開く');
+      card.addEventListener('click', () => selectSlot(slot));
     }
     const main = document.createElement('span');
     main.className = 'slot-open';
-    main.textContent = slot.available ? (link ? '○ 空きあり ↗' : '○ 空きあり') : '× 満席';
+    main.textContent = slot.available ? '○ 希望する' : '× 満席';
     const title = document.createElement('span');
     title.className = 'slot-title';
     title.textContent = slot.title || '面談枠';
@@ -310,6 +438,7 @@
       state.loaded = true;
       const updatedAt = data.updated_at ? new Date(data.updated_at) : null;
       const validTime = updatedAt && !Number.isNaN(updatedAt.getTime());
+      state.updatedAt = validTime ? updatedAt.getTime() : null;
       const status = el('status');
       status.className = 'status';
       const warning = el('warning');
@@ -319,7 +448,7 @@
           timeZone: 'Asia/Tokyo', year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
         }).format(updatedAt) + '（日本時間）';
         const age = Date.now() - updatedAt.getTime();
-        if (age > 3 * 60 * 60 * 1000) {
+        if (!snapshotIsFresh()) {
           status.textContent = '更新が遅れています';
           status.classList.add('warning');
           warning.textContent = '最終取得から3時間以上経過しています。予約先で最新の空き状況を確認してください。';
@@ -349,6 +478,61 @@
       console.error('Failed to load calendar data:', error);
     }
   }
+
+  el('back-to-calendar').addEventListener('click', () => {
+    el('application-panel').hidden = true;
+    state.selected = null;
+    el('application-form').reset();
+    el('table-scroll').scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+
+  el('application-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    if (!form.reportValidity() || !state.selected) return;
+    const submit = el('send-application');
+    if (!snapshotIsFresh() || !formConfigured()) {
+      feedback('最新データまたはメール受付設定を確認できないため、送信できません。', 'error');
+      return;
+    }
+    submit.disabled = true;
+    submit.textContent = '確認中…';
+    try {
+      // Check the public snapshot again before accepting a request.
+      const response = await fetch('./data/slots.json?verify=' + Date.now(), {cache: 'no-store'});
+      if (!response.ok) throw new Error('最新データを読み込めません');
+      const data = await response.json();
+      const verifiedAt = new Date(data.updated_at);
+      if (!data.updated_at || !Number.isFinite(verifiedAt.getTime()) ||
+          Date.now() - verifiedAt.getTime() > FRESHNESS_MS) {
+        throw new Error('空き状況が古くなっています。カレンダーを更新してください。');
+      }
+      const matches = normalize(data).some((s) => s.date === state.selected.date && s.time === state.selected.time && s.available);
+      if (!matches) throw new Error('この日時は最新の空き一覧に見つかりません。別の日時を選んでください。');
+
+      const dataToSend = new FormData(form);
+      dataToSend.set('希望日', state.selected.date);
+      dataToSend.set('希望開始時刻', state.selected.time);
+      dataToSend.set('面談名', state.selected.title);
+      dataToSend.set('取得日時', data.updated_at);
+      dataToSend.set('_subject', 'irodas 面談予約希望 ' + state.selected.date + ' ' + state.selected.time);
+      submit.textContent = '送信中…';
+      const sent = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        body: dataToSend,
+        headers: {'Accept': 'application/json'}
+      });
+      if (!sent.ok) {
+        throw new Error('送信に失敗しました。少し時間をおいてやり直してください。');
+      }
+      form.hidden = true;
+      feedback('予約希望を受け付けました。まだ予約は確定していません。運営者が内容を確認して連絡します。', 'success');
+    } catch (error) {
+      feedback(error.message || '送信に失敗しました。', 'error');
+      submit.disabled = false;
+      submit.textContent = '予約希望を送信';
+    }
+  });
 
   el('prev').addEventListener('click', () => {
     state.weekOffset = Math.max(0, state.weekOffset - 1);
