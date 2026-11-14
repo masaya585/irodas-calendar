@@ -2,7 +2,6 @@ name: Update slots
 
 on:
   schedule:
-    # 毎時0分 (UTC)。GitHub の仕様で遅延・欠落する場合があります
     - cron: "0 * * * *"
   workflow_dispatch:
 
@@ -16,20 +15,38 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      IRODAS_URL: ${{ secrets.IRODAS_URL }}
+      IRODAS_LIST_SELECTOR: ${{ secrets.IRODAS_LIST_SELECTOR }}
+      IRODAS_SCHOOL: 駒澤大学
+      IRODAS_FACULTY: 経済学部
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
-      - name: Fetch slots
-        env:
-          IRODAS_URL: ${{ secrets.IRODAS_URL }}
-          # 認証が必要になった場合も、値は Secrets 経由でのみ渡す（コードに書かない）
+      - name: Explain configuration requirement
+        if: ${{ env.IRODAS_LIST_SELECTOR == '' }}
+        run: |
+          echo "Automatic collection has not been enabled."
+          echo "Ask Muse to identify the exact DOM selector of the public, pre-registration availability list."
+          echo "Add that selector as the Actions secret IRODAS_LIST_SELECTOR."
+          echo "Existing data/slots.json is unchanged."
+
+      - name: Install Playwright
+        if: ${{ env.IRODAS_LIST_SELECTOR != '' }}
+        run: |
+          python -m pip install --disable-pip-version-check playwright==1.58.0
+          python -m playwright install --with-deps chromium
+
+      - name: Fetch public availability
+        if: ${{ env.IRODAS_LIST_SELECTOR != '' }}
         run: python scripts/fetch_slots.py
 
-      - name: Commit if changed
+      - name: Commit valid new snapshot
+        if: ${{ env.IRODAS_LIST_SELECTOR != '' }}
         run: |
           if git diff --quiet -- data/slots.json; then
             echo "No changes"
