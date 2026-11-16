@@ -1,17 +1,38 @@
 {
-  "updated_at": "2026-11-16T04:00:36.904018+09:00",
+  "updated_at": "2026-11-16T10:40:11.585807+09:00",
   "source": "irodas",
   "slots": [
     {
       "date": "2026-11-16",
-      "time": "10:00",
+      "time": "11:00",
       "title": "就活サポート面談",
       "available": true,
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
     },
     {
       "date": "2026-11-16",
-      "time": "11:00",
+      "time": "12:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
+      "date": "2026-11-16",
+      "time": "13:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
+      "date": "2026-11-16",
+      "time": "14:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
+      "date": "2026-11-16",
+      "time": "15:00",
       "title": "就活サポート面談",
       "available": true,
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
@@ -95,13 +116,6 @@
     },
     {
       "date": "2026-11-18",
-      "time": "13:00",
-      "title": "就活サポート面談",
-      "available": true,
-      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
-    },
-    {
-      "date": "2026-11-18",
       "time": "14:00",
       "title": "就活サポート面談",
       "available": true,
@@ -187,6 +201,13 @@
     {
       "date": "2026-11-20",
       "time": "11:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
+      "date": "2026-11-20",
+      "time": "12:00",
       "title": "就活サポート面談",
       "available": true,
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
