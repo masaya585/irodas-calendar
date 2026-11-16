@@ -1,23 +1,9 @@
 {
-  "updated_at": "2026-11-16T10:40:11.585807+09:00",
+  "updated_at": "2026-11-16T12:14:11.687925+09:00",
   "source": "irodas",
   "slots": [
     {
       "date": "2026-11-16",
-      "time": "11:00",
-      "title": "就活サポート面談",
-      "available": true,
-      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
-    },
-    {
-      "date": "2026-11-16",
-      "time": "12:00",
-      "title": "就活サポート面談",
-      "available": true,
-      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
-    },
-    {
-      "date": "2026-11-16",
       "time": "13:00",
       "title": "就活サポート面談",
       "available": true,
@@ -45,6 +31,13 @@
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
     },
     {
+      "date": "2026-11-16",
+      "time": "17:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
       "date": "2026-11-17",
       "time": "10:00",
       "title": "就活サポート面談",
@@ -54,13 +47,6 @@
     {
       "date": "2026-11-17",
       "time": "11:00",
-      "title": "就活サポート面談",
-      "available": true,
-      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
-    },
-    {
-      "date": "2026-11-17",
-      "time": "13:00",
       "title": "就活サポート面談",
       "available": true,
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
@@ -116,6 +102,13 @@
     },
     {
       "date": "2026-11-18",
+      "time": "13:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
+      "date": "2026-11-18",
       "time": "14:00",
       "title": "就活サポート面談",
       "available": true,
@@ -138,13 +131,6 @@
     {
       "date": "2026-11-18",
       "time": "17:00",
-      "title": "就活サポート面談",
-      "available": true,
-      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
-    },
-    {
-      "date": "2026-11-19",
-      "time": "10:00",
       "title": "就活サポート面談",
       "available": true,
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
