@@ -116,6 +116,11 @@ async def fetch_public_list(url: str) -> tuple[str, list[str]]:
             await page.goto(url, wait_until="domcontentloaded", timeout=45000)
             school = page.get_by_role("combobox", name="学校名", exact=True)
             faculty = page.get_by_role("combobox", name="学部名", exact=True)
+            # The form may render asynchronously after DOMContentLoaded.
+            # Wait for the actual inputs instead of checking immediately.
+            # If the site layout has changed, fail without publishing stale guesses.
+            await school.first.wait_for(state="visible", timeout=20000)
+            await faculty.first.wait_for(state="visible", timeout=20000)
             if await school.count() != 1 or await faculty.count() != 1:
                 raise RuntimeError("Could not uniquely locate school/faculty comboboxes")
             # School first: editing school may clear faculty.
