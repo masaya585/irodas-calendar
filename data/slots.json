@@ -1,5 +1,5 @@
 {
-  "updated_at": "2026-11-18T20:21:05.467513+09:00",
+  "updated_at": "2026-11-18T21:16:57.845356+09:00",
   "source": "irodas",
   "slots": [
     {
@@ -19,6 +19,13 @@
     {
       "date": "2026-11-19",
       "time": "13:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
+      "date": "2026-11-19",
+      "time": "14:00",
       "title": "就活サポート面談",
       "available": true,
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
