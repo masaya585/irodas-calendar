@@ -1,7 +1,21 @@
 {
-  "updated_at": "2026-11-20T08:57:35.208541+09:00",
+  "updated_at": "2026-11-20T10:25:49.717180+09:00",
   "source": "irodas",
   "slots": [
+    {
+      "date": "2026-11-20",
+      "time": "11:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
+      "date": "2026-11-20",
+      "time": "12:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
     {
       "date": "2026-11-20",
       "time": "13:00",
@@ -19,6 +33,13 @@
     {
       "date": "2026-11-20",
       "time": "15:00",
+      "title": "就活サポート面談",
+      "available": true,
+      "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
+    },
+    {
+      "date": "2026-11-20",
+      "time": "16:00",
       "title": "就活サポート面談",
       "available": true,
       "url": "https://form.irodas.com/member/partner-call?dai_marketing=ds&chu_marketing=tre"
